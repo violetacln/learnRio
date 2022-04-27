@@ -38,6 +38,8 @@ make.missing <- function(data, p = 0.5){
   data
 }
 
+# or use mice::ampute(data, p=0.5)
+
 ```
 
 
