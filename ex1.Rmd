@@ -1,0 +1,106 @@
+---
+title: "Practical session: ex1.Rmd"
+author: '  '
+date: '   '
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+## Creating data reports
+
+```{r, , echo = TRUE, eval=FALSE}
+
+dat <- iris
+dat[1:3,1] <- dat[3:7,2] <- dat[8:10,5] <- NA
+
+# interesting also, optional investigation of the package at:
+# https://cran.r-project.org/web/packages/missMethods/ 
+
+# is.na(dat)[1:5,]
+# mean(dat[1,], na.rm=TRUE) 
+# dat[!complete.cases(dat),]
+# newdat <- na.omit(dat)
+
+## two methods of creating automatic reports
+## to be run separately, line by line:
+## outputs are html
+
+DataExplorer::create_report(data=dat) 
+             ##   , output_format = html_document()) 
+
+dataReporter::makeDataReport(data=dat, output = "html", replace = TRUE)
+
+```
+
+Note: remember to check your browser and your working directory!
+
+## Exploration of missing values
+
+_Reference: https://epirhandbook.com/en/missing-data.html#assess-missingness-in-a-data-frame_
+
+```{r, echo=TRUE, eval=TRUE}
+
+dat <- iris
+dat[1:3,1] <- dat[3:7,2] <- dat[8:10,5] <- NA
+head(dat)
+
+# percentage of missing values
+naniar::pct_miss(dat)
+# Percent of rows with missing values
+naniar::pct_miss_case(dat)     # use n_complete() for counts
+# Percent of complete rows (no values missing)  
+naniar::pct_complete_case(dat) # use n_complete() for counts
+
+# visualisation of missing values
+library(ggplot2)
+
+naniar::gg_miss_var(dat, show_pct = TRUE, facet="Species")
+
+naniar::gg_miss_fct(dat, Sepal.Length)
+
+ggplot(
+  data = dat,
+  mapping = aes(x = Petal.Length, y = Sepal.Length)) +     
+  naniar::geom_miss_point()
+
+# create indicators of missing values
+library(magrittr)
+shadowed_dat <- dat %>% 
+  naniar::bind_shadow()
+# compare distributions of variable X1 between groups defined by 
+# missing and non-missing values of variable X2
+ggplot(data = shadowed_dat,               # data frame with shadow columns
+  mapping = aes(x = Petal.Length,         # numeric or date column
+                colour = Sepal.Length_NA)) + # shadow column of interest
+  geom_density()                          # plots the density curves
+
+```
+
+
+
+## Testing the mechansim of missing data
+
+_Reference: Little, Roderick J. A. 1988. "A Test of Missing Completely at Random for Multivariate Data with Missing Values." Journal of the American Statistical Association 83 (404): 1198--1202. doi: 10.1080/01621459.1988.10478722_ , which:
+
+  -  uses a multivariate test statistic for association between 
+missing status of some variable values and observed values of other variables.
+
+  - becomes a simple t-test if the data set has:
+only two variables and one of them has missing values.
+
+
+```{r , echo = TRUE, eval=FALSE}
+## use test for MCAR, as shown at:
+# https://naniar.njtierney.com/reference/mcar_test.html
+
+naniar::mcar_test(airquality) # from base R
+
+naniar::mcar_test(dat)   # our example
+
+```
+
+
+
