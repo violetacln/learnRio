@@ -1,0 +1,166 @@
+---
+title: "Practical session: ex2.Rmd"
+author: '  '
+date: '   '
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+## Compare imputation methods
+
+
+### Select and add new methods and apply the method described in the course slides (see pages 42-46) and addapted from https://stefvanbuuren.name/fimd/sec-evaluation.html 
+
+
+#### Function: create data 
+
+```{r, , echo = TRUE, eval=TRUE}
+
+create.data <- function(beta = 1, sigma2 = 1, n = 50,
+                        run = 1) {
+  set.seed(seed = run)
+  x <- rnorm(n)
+  y <- beta * x + rnorm(n, sd = sqrt(sigma2))
+  cbind(x = x, y = y)
+}
+```
+
+
+#### Function: create missing values
+
+```{r, , echo = TRUE, eval=TRUE}
+
+make.missing <- function(data, p = 0.5){
+  rx <- rbinom(nrow(data), 1, p)
+  data[rx == 0, "x"] <- NA
+  data
+}
+
+```
+
+
+
+### Function: imputations with variable methods
+
+See: https://cran.r-project.org/web/packages/mice/mice.pdf 
+
+```{r, , echo = TRUE, eval=TRUE}
+
+test.impute <- function(data, m , method = "method", ...) {
+  imp <- mice(data, method = method, m = m, print = FALSE, ...)
+  fit <- with(imp, lm(y ~ x))
+  tab <- summary(pool(fit), "all", conf.int = TRUE)
+  as.numeric(tab[2, c("estimate", "2.5 %", "97.5 %")])  
+  ## 2 indicates the line of interest in the result
+}
+
+```
+
+
+### Simulate results for new methods
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+## should increase the number of simulations!
+library(mice)
+
+simulate <- function(runs = runs) {
+  res <- array(NA, dim = c(5, runs, 3))
+  dimnames(res) <- list(c("norm.predict", "norm.nob", "mean", "norm" , "lasso.norm")
+                       , as.character(1:runs),
+                        c("estimate", "2.5 %","97.5 %"))
+  for(run in 1:runs) {
+    data <- create.data(run = run)
+    data <- make.missing(data)
+    
+    ## select several imputation methods  
+    res[1, run, ] <- test.impute(data, method = "norm.predict", m = 5)
+    res[2, run, ] <- test.impute(data, method = "norm.nob", m=5)
+    res[3, run, ] <- test.impute(data, method = "mean", m=5)
+    res[4, run, ] <- test.impute(data, method = "norm", m=5)
+    res[5, run, ] <- test.impute(data, method = "lasso.norm", m=5)
+    
+  }
+  res}
+
+res <- simulate(runs=20)
+apply(res, c(1, 3), mean, na.rm = TRUE)
+
+```
+
+
+
+
+### Evaluate performance of new methods
+
+```{r, , echo = TRUE, eval=TRUE}
+
+true <- 1
+RB <- rowMeans(res[,, "estimate"]) - true
+PB <- 100 * abs((rowMeans(res[,, "estimate"]) - true)/ true)
+CR <- rowMeans(res[,, "2.5 %"] < true & true < res[,, "97.5 %"])
+AW <- rowMeans(res[,, "97.5 %"] - res[,, "2.5 %"])
+RMSE <- sqrt(rowMeans((res[,, "estimate"] - true)^2))
+data.frame(RB, PB, CR, AW, RMSE)
+
+```
+
+
+
+
+
+### Resources https://cran.r-project.org/web/packages/mice/mice.pdf, 
+see all methods at page 76 of this paper.
+
+
+## Compare data sets with _daff_ package
+
+### Resource: exercise addapted from the book on "Statistical data cleaning with applications in R"(2018) by Mark van der Loo
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+library(validate)
+data(retailers, package="validate")
+library(simputation)
+library(daff)
+
+retailers2a <- simputation::impute_lm(retailers, turnover ~ total.rev)
+# or, when grouping by company size: # ***
+retailers2 <- simputation::impute_lm(retailers, turnover ~ total.rev| size)
+# compute diff ('retailers' is the reference set)
+d <- diff_data(retailers, retailers2)
+# get the diff as a data.frame
+d$get_data()
+
+# change name of one column and check what happens
+retailers3 <- dplyr::rename(retailers2, income = turnover)
+d1 <- diff_data(retailers, retailers3)
+head(d1$get_data())
+
+retailers3_reconstructed <- patch_data(retailers, d)
+all.equal(retailers3_reconstructed, retailers3)
+## [1] "Names: 1 string mismatch"
+
+## Complement: about cell changes!
+validate::cells(start = retailers, step1 = retailers2)
+
+```
+
+
+
+## More resources (optional) at:
+
+https://www.ebpi.uzh.ch/dam/jcr:dc0cef17-29c7-4e61-8d33-e690561ab7ae/mi_intro20191001.pdf
+
+https://bookdown.org/mike/data_analysis/imputation-missing-data.html#mice-multivariate-imputation-via-chained-equations
+
+https://stefvanbuuren.name/fimd/ch-multilevel.html
+
+https://epirhandbook.com/en/missing-data.html#assess-missingness-in-a-data-frame
+
+
+
+
+
+
