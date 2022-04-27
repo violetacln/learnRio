@@ -1,0 +1,356 @@
+---
+title: "Practical session: ex3.Rmd"
+author: '  '
+date: '   '
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+## Analysis of longitudinal and or clustered data
+
+### Examples of analysis for data with complex correlation structures
+
+- Data types: longitudinal, spatial, repeated, clustered, multivariate measurements 
+
+- Multilevel models: $P(Y|b)=F(b)$ and $P(b|b1)=F1(b1)$ and $P(b1)...$
+
+
+#### Create simple clustered data
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+set.seed(1234)  # this will allow you to exactly duplicate your result
+Ngroups = 100
+NperGroup = 3
+N = Ngroups * NperGroup
+groups = factor(rep(1:Ngroups, each = NperGroup))
+
+u = rnorm(Ngroups, sd = .5)
+e = rnorm(N, sd = .25)
+x = rnorm(N)
+y = 2 + .5 * x + u[groups] + e
+
+d = data.frame(x, y, groups)
+
+```
+
+
+
+#### Model and performance
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE, message=FALSE}
+library(lme4)
+library(lmerTest)
+
+model0 = lmer(y ~ 1 + (1|groups), data=d) #, REML=FALSE)
+model = lmer(y ~ x + (1|groups), data=d) #, REML=FALSE)
+
+summary(model)
+
+confint(model)
+
+VarCorr(model)
+
+library(ggplot2)
+ggplot(aes(x, y), data=d) +
+  geom_point()
+
+re =lme4::ranef(model)$groups
+ggplot2::qplot(x = re[[1]], geom = 'density', xlim = c(-3, 3))
+
+performance::icc(model)
+
+performance::r2(model, by_group = TRUE)
+
+
+#F-test with Satterthwaite adjusted degrees of freedom:
+anova(model) 
+
+# likelihood ratio tests (Deviance Difference Test) by single term deletion 
+lmerTest::ranova(model)
+
+```
+
+
+
+#### Plots for model checking
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE, fig.align="left"}
+
+plot(fitted(model), resid(model, type = "pearson")) 
+abline(0,0, col="red")
+
+qqnorm(resid(model))
+qqline(resid(model), col = "red") 
+
+qqnorm(ranef(model)$groups[,1] )
+qqline(ranef(model)$groups[,1], col = "red")
+
+library(merTools)
+library(ggplot2)
+
+fastdisp(model)    ### displaying the model coeff.est and coeff.se
+
+#fixed effects  
+feEx <- FEsim(model, 1000)
+plotFEsim(feEx) +
+  theme_bw() + labs(title = "Coefficient Plot",
+                    y = "Median Effect Estimate", x = "")
+
+#random effects
+reEx <- REsim(model)
+head(reEx)
+
+##lattice::dotplot(ranef(model, condVar=TRUE))
+
+p1 <- plotREsim(reEx)
+p1
+
+```
+
+
+ 
+### Bayesian style evaluation of model
+
+ 
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+### Bayesian style credible intervals
+library(arm)
+sim_fit <- arm::sim( model, 5000)  
+bayestestR::hdi(sim_fit)
+bayestestR::hdi(sim_fit, effects="fixed")  # or "all"   # or "random"
+## too long
+# bayestestR::hdi(sim_fit, effects="random") 
+bayestestR::eti(sim_fit)
+
+xf <- bayestestR::ci(sim_fit, ci = c(.5, .8, .95), effects = "fixed")
+plot(xf)
+
+## too big
+# xr <- bayestestR::ci(sim_fit, ci = c(.5, .8, .95), effects = "random") 
+# plot(xr)
+
+```
+
+
+
+#### Comparing models
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+table_build_models_1 <- 
+   sjPlot::tab_model(
+     
+  model0, 
+  model,
+     
+     show.ci = FALSE,
+     show.reflvl = TRUE,
+     show.se = TRUE,
+     auto.label = FALSE,
+     string.se = "SE",
+     show.icc = TRUE,
+     show.aic = TRUE, 
+     digits=3,
+     dv.labels = c("model0", "model")
+    ## ,file="comparingModels1.doc"
+     
+   )
+ 
+ ## table_build_models_1
+ 
+```
+
+
+
+
+### Imputations for multilevel models
+
+See: https://stefvanbuuren.name/fimd/ch-multilevel.html
+
+
+#### Data: structured and with missing values
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+library(mice)
+data("brandsma", package = "mice")
+
+#di <- brandsma[, c("sch", "lpo", "sex", "den")]
+
+di <- brandsma[, c("sch", "lpo")]
+
+
+# School number: cluster variable
+# Language test post: outcome at pupil level
+# Sex of pupil: predictor at pupil level
+# School denomination: predictor at school level
+
+mice::md.pattern(di, plot = TRUE)
+
+```
+
+
+
+#### Imputation methods
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+# sample: Find imputations by random sampling from the observed values in lpo. 
+#         This method ignores sch;
+# pmm: Single-level predictive mean matching with the school indicator coded as
+#         a dummy variable;
+# 2l.pan: Multilevel method using the linear mixed model to draw univariate imputations;
+# 2l.norm: Multilevel method using the linear mixed model with heterogeneous error variances;
+# 2l.pmm: Predictive mean matching based on predictions from the linear mixed model, 
+#         with random draws from the regression coefficients and the random effects, using five donors.
+
+library(miceadds)
+library(pan)
+methods <- c("sample", "pmm", "2l.pan", "2l.norm", "2l.pmm")
+result <- vector("list", length(methods))
+names(result) <- methods
+for (meth in methods) {
+  di <- brandsma[, c("sch", "lpo")]
+  pred <- make.predictorMatrix(di)
+  pred["lpo", "sch"] <- -2  ## says that "sch" is the grouping variable
+  # maxit = 1 since only one variable has missing values, no need to iterate
+  result[[meth]] <- mice(di, pred = pred, meth = meth,
+                         m = 10, maxit = 1,
+                         print = FALSE, seed = 82828)
+}
+
+
+## look at results
+## for example, method 3 (but you may choose any other!)
+
+# for method 3, the imputed missing values are
+d3imp <- result[[3]]$imp
+str(d3imp)
+#head(d3imp[[2]][,1:5], 5)
+
+# for method 3, select one complete data set, for example set 9
+d3 <- complete(result[[3]],9)
+head(d3)
+# or another set: method 3, set 2
+d3b <- complete(result[[3]],2)
+
+# fit MLM models
+m300 <- lm(lpo~1, data=di)
+m30 <- lmer(lpo ~ 1 + (1|sch), data=di, REML=FALSE)
+m3 <- lmer(lpo ~ 1 + (1|sch), data=d3, REML=FALSE)
+m3b <- lmer(lpo ~ 1 + (1|sch), data=d3b, REML=FALSE)
+
+
+# Compare models
+table_build_models <- 
+   sjPlot::tab_model(
+     
+   m300,
+   m30,
+   m3,
+   m3b,
+     
+     show.ci = FALSE,
+     show.reflvl = TRUE,
+     show.se = TRUE,
+     auto.label = FALSE,
+     string.se = "SE",
+     show.icc = TRUE,
+     show.aic = TRUE, 
+     digits=3,
+     dv.labels = c("m300", "m30", "m3", "m3b")
+    ## ,file="comparingModels.doc"
+     
+   )
+ 
+## table_build_models  ## in viewer
+  
+  
+```
+
+
+## Time series analysis
+
+### Resource: Robert Hyndman's book online, at https://otexts.com/fpp2/ 
+
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+
+# time series decomposition
+library(forecast)
+data(elecequip, package = "fpp")
+fit <- stl(elecequip, t.window=13, s.window="periodic",
+  robust=TRUE)
+# forecasting with decomposition
+fit %>% seasadj() %>% naive() %>%
+  autoplot() + ylab("New orders index") +
+  ggtitle("Naive forecasts of seasonally adjusted data")
+
+# now forecast() function is applied to the "stl" object. We need to specify the method being used on the seasonally adjusted data, and the function will do the re-seasonalising for you. 
+fit %>% forecast(method="naive") %>%
+  autoplot() + ylab("New orders index")
+
+# using neural networks
+# data(sunspotarea, package = "fpp")
+# or the data used previously
+fitNN <- nnetar(elecequip, lambda=0)
+autoplot(forecast(fitNN,h=30))
+# with prediction intervals, also:
+autoplot(forecast(fitNN,h=30, PI=TRUE))
+
+```
+
+
+
+## Interpretation of Machine Learning results
+
+
+```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+## see the iml vignette page
+set.seed(42)
+library("iml")
+library("randomForest")
+
+# median house values from Boston neighbourhoods
+data("Boston", package = "MASS")
+head(Boston)
+rf <- randomForest(medv ~ ., data = Boston, ntree = 50)
+
+X <- Boston[which(names(Boston) != "medv")]
+predictor <- Predictor$new(rf, data = X, y = Boston$medv)
+
+imp <- FeatureImp$new(predictor, loss = "mae")
+library("ggplot2")
+plot(imp)
+imp$results
+
+interact <- Interaction$new(predictor)
+plot(interact)
+
+interact1 <- Interaction$new(predictor, feature = "crim")
+plot(interact1)
+
+effs <- FeatureEffects$new(predictor)
+plot(effs)
+
+tree <- TreeSurrogate$new(predictor, maxdepth = 2)
+plot(tree)
+
+head(tree$predict(Boston))
+
+```
+
+
+
+### More resources at:
+
+https://cran.r-project.org/web/packages/iml/vignettes/intro.html
+
+https://cran.r-project.org/web/packages/DALEX/index.html
+
+https://christophm.github.io/interpretable-ml-book/agnostic.html
+
