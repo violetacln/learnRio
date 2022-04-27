@@ -57,6 +57,8 @@ naniar::pct_complete_case(dat) # use n_complete() for counts
 # visualisation of missing values
 library(ggplot2)
 
+mice::md.pattern(dat)
+
 naniar::gg_miss_var(dat, show_pct = TRUE, facet="Species")
 
 naniar::gg_miss_fct(dat, Sepal.Length)
