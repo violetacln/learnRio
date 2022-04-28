@@ -8,6 +8,10 @@ output:
     df_print: paged
 ---
 
+
+During this practical session, we run the examples included in this file and may test the same code for different data sets. 
+
+
 ## Analysis of longitudinal and or clustered data
 
 ### Examples of analysis for data with complex correlation structures
