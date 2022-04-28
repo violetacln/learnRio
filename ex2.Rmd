@@ -9,6 +9,7 @@ output:
 ---
 
 
+
 During this practical session, we run the examples included in this file and may test the same code for different data sets. 
 
 
@@ -20,7 +21,7 @@ During this practical session, we run the examples included in this file and may
 
 #### Function: create data 
 
-```{r,  echo = TRUE, eval=TRUE}
+```{r, echo = TRUE, eval=TRUE}
 
 create.data <- function(beta = 1, sigma2 = 1, n = 50,
                         run = 1) {
@@ -34,7 +35,7 @@ create.data <- function(beta = 1, sigma2 = 1, n = 50,
 
 #### Function: create missing values
 
-```{r,  echo = TRUE, eval=TRUE}
+```{r, echo = TRUE, eval=TRUE}
 
 make.missing <- function(data, p = 0.5){
   rx <- rbinom(nrow(data), 1, p)
@@ -52,7 +53,7 @@ make.missing <- function(data, p = 0.5){
 
 See: https://cran.r-project.org/web/packages/mice/mice.pdf 
 
-```{r, echo = TRUE, eval=TRUE}
+```{r,  echo = TRUE, eval=TRUE}
 
 test.impute <- function(data, m , method = "method", ...) {
   imp <- mice(data, method = method, m = m, print = FALSE, ...)
@@ -97,31 +98,12 @@ apply(res, c(1, 3), mean, na.rm = TRUE)
 ```
 
 
+### Plotting distributions
 
-
-### Evaluate performance of new methods
-
-```{r,  echo = TRUE, eval=TRUE}
-
-true <- 1
-RB <- rowMeans(res[,, "estimate"]) - true
-PB <- 100 * abs((rowMeans(res[,, "estimate"]) - true)/ true)
-CR <- rowMeans(res[,, "2.5 %"] < true & true < res[,, "97.5 %"])
-AW <- rowMeans(res[,, "97.5 %"] - res[,, "2.5 %"])
-RMSE <- sqrt(rowMeans((res[,, "estimate"] - true)^2))
-data.frame(RB, PB, CR, AW, RMSE)
-
-```
-
-
-
-### Checking distributions
-
-```{r , echo = TRUE, eval=TRUE}
+```{r,  echo = FALSE, eval=TRUE, warning=FALSE}
 
 data1 <- create.data(run = 1)
 data1.mis <- make.missing(data1)
-
 imputed_Data <-
     mice(
         data1.mis,
@@ -136,13 +118,27 @@ imputed_Data <-
         # "rf": random forest imputations.
         # "2lonly.pmm": Level-2 class predictive mean matching
         # Other methods based on whether variables are (1) numeric, (2) binary, (3) ordered, (4), unordered
-        seed = 500
+        seed = 500, print=FALSE
     )
 
-
 summary(imputed_Data)
-
 densityplot(imputed_Data)
+
+```
+
+
+
+### Evaluate performance of new methods
+
+```{r, echo = TRUE, eval=TRUE}
+
+true <- 1
+RB <- rowMeans(res[,, "estimate"]) - true
+PB <- 100 * abs((rowMeans(res[,, "estimate"]) - true)/ true)
+CR <- rowMeans(res[,, "2.5 %"] < true & true < res[,, "97.5 %"])
+AW <- rowMeans(res[,, "97.5 %"] - res[,, "2.5 %"])
+RMSE <- sqrt(rowMeans((res[,, "estimate"] - true)^2))
+data.frame(RB, PB, CR, AW, RMSE)
 
 ```
 
@@ -150,6 +146,7 @@ densityplot(imputed_Data)
 
 ### Resources https://cran.r-project.org/web/packages/mice/mice.pdf, 
 see all methods at page 76 of this paper.
+
 
 
 ## Compare data sets with _daff_ package
