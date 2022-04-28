@@ -100,7 +100,7 @@ apply(res, c(1, 3), mean, na.rm = TRUE)
 
 ### Plotting distributions
 
-```{r,  echo = FALSE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 data1 <- create.data(run = 1)
 data1.mis <- make.missing(data1)
