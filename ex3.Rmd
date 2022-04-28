@@ -23,7 +23,7 @@ During this practical session, we run the examples included in this file and may
 
 #### Create simple clustered data
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r, echo = TRUE, eval=TRUE, warning=FALSE}
 
 set.seed(1234)  # this will allow you to exactly duplicate your result
 Ngroups = 100
@@ -44,7 +44,7 @@ d = data.frame(x, y, groups)
 
 #### Model and performance
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE, message=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE, message=FALSE}
 library(lme4)
 library(lmerTest)
 
@@ -81,7 +81,7 @@ lmerTest::ranova(model)
 
 #### Plots for model checking
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE, fig.align="left"}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE, fig.align="left"}
 
 plot(fitted(model), resid(model, type = "pearson")) 
 abline(0,0, col="red")
@@ -119,7 +119,7 @@ p1
 ### Bayesian style evaluation of model
 
  
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 ### Bayesian style credible intervals
 library(arm)
@@ -143,7 +143,7 @@ plot(xf)
 
 #### Comparing models
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 table_build_models_1 <- 
    sjPlot::tab_model(
@@ -178,7 +178,7 @@ See: https://stefvanbuuren.name/fimd/ch-multilevel.html
 
 #### Data: structured and with missing values
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 library(mice)
 data("brandsma", package = "mice")
@@ -201,7 +201,7 @@ mice::md.pattern(di, plot = TRUE)
 
 #### Imputation methods
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 # sample: Find imputations by random sampling from the observed values in lpo. 
 #         This method ignores sch;
@@ -282,7 +282,7 @@ table_build_models <-
 ### Resource: Robert Hyndman's book online, at https://otexts.com/fpp2/ 
 
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r, echo = TRUE, eval=TRUE, warning=FALSE}
 
 # time series decomposition
 library(forecast)
@@ -313,7 +313,7 @@ autoplot(forecast(fitNN,h=30, PI=TRUE))
 ## Interpretation of Machine Learning results
 
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 ## see the iml vignette page
 set.seed(42)
 library("iml")
@@ -349,7 +349,6 @@ head(tree$predict(Boston))
 ```
 
 
-
 ### More resources at:
 
 https://cran.r-project.org/web/packages/iml/vignettes/intro.html
@@ -357,4 +356,13 @@ https://cran.r-project.org/web/packages/iml/vignettes/intro.html
 https://cran.r-project.org/web/packages/DALEX/index.html
 
 https://christophm.github.io/interpretable-ml-book/agnostic.html
+
+
+
+```{r , echo = TRUE, eval=TRUE,}
+
+sessionInfo()
+
+```
+
 
