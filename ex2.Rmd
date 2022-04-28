@@ -115,6 +115,37 @@ data.frame(RB, PB, CR, AW, RMSE)
 
 
 
+### Checking distributions
+
+```{r , echo = TRUE, eval=TRUE}
+
+data1 <- create.data(run = 1)
+data1.mis <- make.missing(data1)
+
+imputed_Data <-
+    mice(
+        data1.mis,
+        m = 5, # number of imputed datasets
+        maxit = 50, # number of iterations taken to impute missing values
+        method = 'pmm', # method used in imputation. Here, we used predictive mean matching
+        # other methods can be 
+        # "pmm": Predictive mean matching
+        # "midastouch" : weighted predictive mean matching
+        # "sample": Random sample from observed values
+        # "cart": classification and regression trees
+        # "rf": random forest imputations.
+        # "2lonly.pmm": Level-2 class predictive mean matching
+        # Other methods based on whether variables are (1) numeric, (2) binary, (3) ordered, (4), unordered
+        seed = 500
+    )
+
+
+summary(imputed_Data)
+
+densityplot(imputed_Data)
+
+```
+
 
 
 ### Resources https://cran.r-project.org/web/packages/mice/mice.pdf, 
