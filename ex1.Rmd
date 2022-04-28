@@ -9,6 +9,8 @@ output:
 ---
 
 
+During this practical session, we run the examples included in this file and may test the same code for different data sets. 
+
 ## Creating data reports
 
 ```{r, , echo = TRUE, eval=FALSE}
