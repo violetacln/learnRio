@@ -20,7 +20,7 @@ During this practical session, we run the examples included in this file and may
 
 #### Function: create data 
 
-```{r, , echo = TRUE, eval=TRUE}
+```{r,  echo = TRUE, eval=TRUE}
 
 create.data <- function(beta = 1, sigma2 = 1, n = 50,
                         run = 1) {
@@ -34,7 +34,7 @@ create.data <- function(beta = 1, sigma2 = 1, n = 50,
 
 #### Function: create missing values
 
-```{r, , echo = TRUE, eval=TRUE}
+```{r,  echo = TRUE, eval=TRUE}
 
 make.missing <- function(data, p = 0.5){
   rx <- rbinom(nrow(data), 1, p)
@@ -52,7 +52,7 @@ make.missing <- function(data, p = 0.5){
 
 See: https://cran.r-project.org/web/packages/mice/mice.pdf 
 
-```{r, , echo = TRUE, eval=TRUE}
+```{r, echo = TRUE, eval=TRUE}
 
 test.impute <- function(data, m , method = "method", ...) {
   imp <- mice(data, method = method, m = m, print = FALSE, ...)
@@ -67,7 +67,7 @@ test.impute <- function(data, m , method = "method", ...) {
 
 ### Simulate results for new methods
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 
 ## should increase the number of simulations!
 library(mice)
@@ -101,7 +101,7 @@ apply(res, c(1, 3), mean, na.rm = TRUE)
 
 ### Evaluate performance of new methods
 
-```{r, , echo = TRUE, eval=TRUE}
+```{r,  echo = TRUE, eval=TRUE}
 
 true <- 1
 RB <- rowMeans(res[,, "estimate"]) - true
@@ -125,7 +125,7 @@ see all methods at page 76 of this paper.
 
 ### Resource: exercise addapted from the book on "Statistical data cleaning with applications in R"(2018) by Mark van der Loo
 
-```{r, , echo = TRUE, eval=TRUE, warning=FALSE}
+```{r,  echo = TRUE, eval=TRUE, warning=FALSE}
 library(validate)
 data(retailers, package="validate")
 library(simputation)
@@ -166,6 +166,13 @@ https://stefvanbuuren.name/fimd/ch-multilevel.html
 https://epirhandbook.com/en/missing-data.html#assess-missingness-in-a-data-frame
 
 
+
+
+```{r , echo = TRUE, eval=TRUE,}
+
+sessionInfo()
+
+```
 
 
 
