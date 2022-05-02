@@ -1,0 +1,25 @@
+
+Questions and answers
+
+1.	How can we combine R and GIS (geographic information systems)?
+
+Answer: 
+R had made big progress in recent years regarding GIS and/or combining geospatial and statistical data. Here are two useful links which show how to work with GIS-type of files using several R-packages:
+https://www.jessesadler.com/post/gis-with-r-intro/
+https://mgimond.github.io/MEGUG2016/Tutorial.html
+  	We will not cover this topic in the present course but most likely in the next one.
+    
+    
+2.	How do we use R to verify microdata, simulations, coding?
+
+Answer:
+Data (microdata or aggregated data) validation has been covered by our course last year.
+ I could recommend a useful online resource: https://data-cleaning.github.io/validate/ or the book: MPJ van der Loo and E de Jonge (2018) Statistical Data Cleaning With Applications in R. John Wiley & Sons, NY.
+Simulated data or variable value coding are efficiently managed/validated with similar methods and with basic knowledge of the https://www.tidyverse.org/ package.
+There exist some specialised R-packages about the variable-value-coding and manipulation for official statistics data, like the package: https://cran.rproject.org/web/packages/eurostat/index.html
+In our course of 3-5May 2022, we will refer to output data and model validation and especially to imputations, editing and analysis of results.
+
+3.	Is experience with R required for this course?
+
+Answer:
+Yes, basic R knowledge is required. This means ability to work with R scripts, use RStudio, install an R package, understand functions and data frames in R.
