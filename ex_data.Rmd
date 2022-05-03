@@ -1,0 +1,140 @@
+
+
+---
+title: "Reminders: data read and write with R"
+author: '  '
+date: '   '
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+### Reminders about data __input/output__ in/from R
+
+
+Input/Output data:
+
+ - included in R-packages
+
+ - from (csv and other types of) files 
+ 
+ - from databases
+ 
+ - and more!
+
+
+
+
+### Example: Input data from an R-package
+
+```{r, eval=FALSE, echo=TRUE}
+
+library(dplyr)
+#data(package="dplyr")
+data(storms)
+?storms
+head(storms,3)
+
+
+library(validate)
+data(package = "validate")
+data(SBS2000)
+head(SBS2000,3)
+
+data(package = .packages(all.available = TRUE))
+
+```
+
+
+
+### Example: Input/Output csv(or other...) -files
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# if needed, one may use "file.choose()" instead of "path_name_file" in:
+
+df00 <- read.csv("path_name_file") ## df00 <- read.csv("file_ex.csv")
+
+# or using the readr-package of tidyverse:
+df01 <- readr::read_csv("file_ex.csv")
+
+# and OK ... there might be some excel files somewhere...
+df0 <- readxl::read_excel("path_name_file") 
+
+write.csv(df, "path_and_name_file", row.names = FALSE)
+ df <- SBS2000; write.csv(df, "file_ex.csv", row.names = FALSE)
+
+```
+
+
+
+### Example: Input/Output DataBase (if on _windows_)
+
+when using _RODBC_
+
+```{r, eval=FALSE, echo=TRUE}
+
+library(RODBC)
+#connect
+dbhandle <- odbcDriverConnect('driver={SQLServer};
+            server=server_name ; database=database_name;
+            trusted_connection=true')
+#read
+df <- sqlQuery(dbhandle, "select * from database_table")  
+
+# or
+df <- sqlFetch(dbhandle,  database_table_name)
+
+close(dbhandle) # or odbc(close)
+
+#write
+sqlSave( dbhandle, data_frame_name, table_name, append=FALSE)     
+
+# or
+sqlQuery(dbhandle, paste('insert into database_table_name values('a')',
+                         sep=""))   
+close(dbhandle)
+
+```
+
+
+### Example: Input/Output DataBase (If on Linux)
+	
+
+using _odbc_ and _DBI_:
+
+```{r, eval=FALSE, echo=TRUE}
+
+library(odbc)
+library(DBI)
+
+con_dev <- dbConnect(odbc(),
+                     Driver = "FreeTDS",
+                     Server = "myserver",
+                     port=XXXX,   #depending on server
+                     Database = "mydatabase",
+                     UID = "myname",
+                     PWD = rstudioapi::askForPassword("Database password")
+)
+
+result <- dbSendQuery(con_dev, "SELECT * FROM schema.table")
+
+dfnew <- dbFetch(result) 
+
+```
+
+
+	
+## 
+
+### all R data sets
+
+
+```{r, eval=FALSE, echo=TRUE}
+data(package = .packages(all.available = TRUE))
+
+```
+
