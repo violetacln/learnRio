@@ -1,0 +1,17 @@
+If trying to knit an Rmd file to a pdf-output gives errors, you might like to:
+
+-run
+
+install.packages('tinytex')
+
+-then run:
+
+tinytex::install_tinytex()
+
+- and then test that all is well, with:
+
+tinytex:::is_tinytex()
+
+which should give the answer "TRUE".
+
+
