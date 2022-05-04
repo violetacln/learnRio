@@ -1,0 +1,110 @@
+
+---
+title: "Illustrative formulae"
+author: " "
+date: "   "
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#### Simplest model
+
+$$y_i \sim \alpha + \beta x_i + (\epsilon_i)$$
+
+
+### Multilevel (hierarchical) models 
+
+(linear or generalised, with discrete or continuous variables)
+
+May include cross-correlations, grouping dependencies,  dynamical aspects (e.g. auto-correlations)
+
+Most general formulation: $y = F(t, x, z, ...)$ and $y \sim {\mathcal P}$ or in _levels_, e.g.
+
+$$y = F(t | A , B) + e$$
+$$A =f_A(x,z|a^1)$$
+$$B = f_B(x,z|b^1)$$
+$a^1 = ...+a^2$ and $b^1 =...$, where $e, a^1 , a^2 , ...$ are distributed according to:
+
+- (multi-) variate Normal (when frequentist) distributions
+
+- (multi-) variate Prior (when Bayesian) distributions
+
+
+
+## Example: simple MLM
+
+Each subject is observed many times. 
+
+The response (y) of each subject is a linear function of time (at time points $i$). 
+
+The parameters (intercept and slope) of these functions have a normal distribution with higher level parameters $\mu_{\alpha},  \mu_{\beta}, ...$.
+
+
+$$y_i \sim \alpha_{ji} + \beta_{1ji} t + \epsilon_{ij}(\sigma))$$
+or
+
+
+$$\begin{aligned}
+  \operatorname{y}_{i}  &\sim N \left(\alpha_{j[i]} + \beta_{1j[i]}(\operatorname{t}), \sigma^2 \right) \\    
+\left(
+  \begin{array}{c} 
+    \begin{aligned}
+      &\alpha_{j} \\
+      &\beta_{1j}
+    \end{aligned}
+  \end{array}
+\right)
+  &\sim N \left(
+\left(
+  \begin{array}{c} 
+    \begin{aligned}
+      &\mu_{\alpha_{j}} \\
+      &\mu_{\beta_{1j}}
+    \end{aligned}
+  \end{array}
+\right)
+, 
+\left(
+  \begin{array}{cc}
+     \sigma^2_{\alpha_{j}} & \rho_{\alpha_{j}\beta_{1j}} \\ 
+     \rho_{\beta_{1j}\alpha_{j}} & \sigma^2_{\beta_{1j}}
+  \end{array}
+\right)
+ \right)
+    \text{, for Subject j = 1,} \dots \text{,J}
+\end{aligned}$$
+
+and $$ \mu \sim ...$$
+
+### Note on time-varying and time-constant predictors, while groups/clusters present
+
+$$y \sim {\color{blue} t} + {\color{red} x_{tc}} + x_{tv}^B+ x_{tv}^W +z$$ 
+
+$$+ interact(t,x,z) + (1+t|g) + (1+x_{tv}^W|g)$$
+
+
+### Why Bayesian
+
+The advantages of using Bayesian approach
+
+- interpretation of results (while in frequentist approach is difficult, unless the model is linear, with no inverse link function and no interaction terms OR! unless we do _simulations_):
+
+    - by inspecting the posterior distribution at different levels of predictors
+
+    - being able to make probabilistic statements about a scientific hypothesis
+
+
+- combining _all possible models_, according to: 
+
+    - posterior probability of models, given the data and 
+    
+    - posterior probability of parameters, given all models and data, which gives
+    
+    - posterior mean and standard deviation of parameter of interest <-> point estimate and uncertainty 
+
