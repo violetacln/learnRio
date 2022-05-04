@@ -1,0 +1,53 @@
+
+---
+title: "ex_clusters_Machine_Leraning"
+author: '   '
+date: '   '
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### Identify clusters in the data
+
+
+```{r, echo=TRUE, eval=TRUE}
+df <- iris[,1:4]
+# find optimal number of clusters
+  dff <- scale(df)                  # base R function
+  factoextra::fviz_nbclust(dff, kmeans, method = "silhouette") 
+  # methods may be<. gap_stat, wss, silhouette
+  #WHICH k? Where sudden "change decay slope"!
+# compute and visualise
+  set.seed(123)
+  km.res <- kmeans(dff, 2, nstart = 25)
+  km.res
+# visualize
+  factoextra::fviz_cluster(km.res, data = dff,
+               ellipse.type = "convex",
+                 # "norm",
+                 # "convex",
+               palette = "jco",
+               repel = TRUE,
+               ggtheme = ggplot2::theme_minimal())
+# may adjust max.overlaps to show all labels on plots
+  
+```
+
+***
+
+... and continue
+
+```{r , echo=TRUE, eval=TRUE}
+
+# compare with PAM clustering
+  # Compute PAM
+  pam.res <- cluster::pam(dff, 2)
+  # Visualize
+  factoextra::fviz_cluster(pam.res)
+
+```
+
+
+
+
